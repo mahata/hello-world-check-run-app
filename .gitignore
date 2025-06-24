@@ -1,0 +1,5 @@
+.env
+my-hello-world-cli-app.2025-06-24.private-key.pem
+node_modules/
+
+dist/*
