@@ -45,6 +45,7 @@ pnpm run dev
 This project uses Vitest for testing.
 
 ### Run Tests
+
 ```bash
 # Run tests once
 pnpm run test:run
@@ -60,6 +61,7 @@ pnpm run test:ui
 ```
 
 ### Test Structure
+
 - `src/index.test.ts` - Unit tests for core functionality
 - `src/integration.test.ts` - Integration tests for HTTP endpoints
 
@@ -80,7 +82,3 @@ Configure your GitHub App with the following settings:
   - Pull requests: Read
 - **Events**:
   - Pull request (opened, synchronize)
-
-## License
-
-This project is licensed under the MIT License.
