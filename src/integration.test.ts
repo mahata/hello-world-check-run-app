@@ -23,7 +23,7 @@ function createTestApp() {
 
 	app.post("/webhooks", async (c) => {
 		try {
-			const _body = await c.req.text();
+			await c.req.text();
 			const headers = c.req.header();
 
 			if (headers["x-github-delivery"] && headers["x-github-event"]) {
