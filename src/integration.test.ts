@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import { beforeEach, describe, expect, it } from "vitest";
 
-// テスト用のミニマルなHonoアプリケーションを作成
 function createTestApp() {
 	const app = new Hono();
 
@@ -27,7 +26,6 @@ function createTestApp() {
 			const _body = await c.req.text();
 			const headers = c.req.header();
 
-			// テスト用の簡略化されたレスポンス
 			if (headers["x-github-delivery"] && headers["x-github-event"]) {
 				return c.text("OK", 200);
 			} else {
