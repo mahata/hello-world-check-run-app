@@ -5,18 +5,15 @@
 	"main": "dist/index.js",
 	"scripts": {
 		"test": "vitest",
-		"test:run": "vitest run",
+		"test:run": "vitest run --logHeapUsage",
 		"test:coverage": "vitest run --coverage",
 		"test:ui": "vitest --ui",
 		"build": "tsc",
 		"start": "node -r dotenv/config dist/index.js",
 		"dev": "tsc --watch & node --watch dist/index.js",
 		"deploy": "pnpm run build && pnpm run start",
-		"format": "biome format --write .",
-		"lint": "biome lint .",
-		"lint:fix": "biome lint --apply .",
-		"check": "biome check .",
-		"check:fix": "biome check --apply ."
+		"lint": "biome check ./",
+		"lint:fix": "biome check ./ --write --unsafe --diagnostic-level=error --files-ignore-unknown=true"
 	},
 	"keywords": [
 		"github",
