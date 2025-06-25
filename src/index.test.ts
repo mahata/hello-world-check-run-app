@@ -1,16 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// テスト対象の関数をimportするために、index.tsから一部の機能を分離する必要があります
-// しかし、まずは環境変数のバリデーション関数をテストします
-
 describe("Environment Variables Validation", () => {
 	beforeEach(() => {
-		// 各テスト前に環境変数をクリア
 		vi.unstubAllEnvs();
 	});
 
 	it("should validate required environment variables", () => {
-		// 必要な環境変数を設定
 		vi.stubEnv("GITHUB_APP_ID", "12345");
 		vi.stubEnv(
 			"GITHUB_APP_PRIVATE_KEY_BASE64",
@@ -18,7 +13,6 @@ describe("Environment Variables Validation", () => {
 		);
 		vi.stubEnv("GITHUB_WEBHOOK_SECRET", "test-webhook-secret");
 
-		// 環境変数が正しく設定されていることを確認
 		expect(process.env.GITHUB_APP_ID).toBe("12345");
 		expect(process.env.GITHUB_APP_PRIVATE_KEY_BASE64).toBe(
 			Buffer.from("test-private-key").toString("base64"),
@@ -27,7 +21,6 @@ describe("Environment Variables Validation", () => {
 	});
 
 	it("should handle missing environment variables", () => {
-		// 環境変数が未設定の場合をテスト
 		expect(process.env.GITHUB_APP_ID).toBeUndefined();
 		expect(process.env.GITHUB_APP_PRIVATE_KEY_BASE64).toBeUndefined();
 		expect(process.env.GITHUB_WEBHOOK_SECRET).toBeUndefined();
@@ -39,18 +32,6 @@ describe("Environment Variables Validation", () => {
 
 		const decoded = Buffer.from(base64Key, "base64").toString("utf8");
 		expect(decoded).toBe(testKey);
-	});
-});
-
-describe("HTTP Endpoints", () => {
-	it("should have correct endpoint structure", () => {
-		// アプリケーションのエンドポイント構造をテスト
-		const expectedEndpoints = ["/", "/webhooks", "/health"];
-
-		// このテストは実際のHonoアプリケーションの構造を確認するためのものです
-		expect(expectedEndpoints).toContain("/");
-		expect(expectedEndpoints).toContain("/webhooks");
-		expect(expectedEndpoints).toContain("/health");
 	});
 });
 
@@ -119,7 +100,6 @@ describe("GitHub API Integration", () => {
 			},
 		};
 
-		// プルリクエストのペイロード構造をテスト
 		expect(mockPayload.repository.owner.login).toBe("test-owner");
 		expect(mockPayload.repository.name).toBe("test-repo");
 		expect(mockPayload.pull_request.number).toBe(123);
