@@ -46,7 +46,7 @@ async function handlePullRequest(payload: PullRequestPayload, env: Env) {
 
 		// Cloudflare Workers環境でBase64デコード
 		const privateKeyPem = atob(env.GITHUB_APP_PRIVATE_KEY_BASE64);
-		
+
 		const auth = createAppAuth({
 			appId: parseInt(env.GITHUB_APP_ID, 10),
 			privateKey: privateKeyPem,
@@ -88,7 +88,8 @@ async function handlePullRequest(payload: PullRequestPayload, env: Env) {
 
 app.get("/", (c) => {
 	return c.json({
-		message: "Hello World GitHub App is running on Cloudflare Workers with Hono!",
+		message:
+			"Hello World GitHub App is running on Cloudflare Workers with Hono!",
 		timestamp: new Date().toISOString(),
 		framework: "Hono",
 		runtime: "Cloudflare Workers",
@@ -98,8 +99,12 @@ app.get("/", (c) => {
 app.post("/webhooks", async (c) => {
 	try {
 		const env = c.env;
-		
-		if (!env.GITHUB_APP_ID || !env.GITHUB_APP_PRIVATE_KEY_BASE64 || !env.GITHUB_WEBHOOK_SECRET) {
+
+		if (
+			!env.GITHUB_APP_ID ||
+			!env.GITHUB_APP_PRIVATE_KEY_BASE64 ||
+			!env.GITHUB_WEBHOOK_SECRET
+		) {
 			console.error("Required environment variables are not set");
 			return c.text("Internal Server Error", 500);
 		}
