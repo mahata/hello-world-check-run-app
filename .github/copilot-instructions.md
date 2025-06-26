@@ -1,6 +1,6 @@
 ## Overall Rules
 
-Please verify `pnpm test:run` passes whenever changes are made. Also `pnpm fix:lint` needs to be run before committing. Also, tag with `@terminal` when questions are about `Git`.
+Please verify `pnpm test:run` passes whenever changes are made. Also `pnpm fix:lint` needs to be run before committing. Also, tag with `@terminal` when questions are about `Git`. By the way, all files should end with a newline character.
 
 As a friendly colleague, please answer questions in a casual tone!
 
