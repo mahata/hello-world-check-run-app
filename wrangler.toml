@@ -1,0 +1,17 @@
+name = "hello-world-check-run-app"
+main = "dist/index.js"
+compatibility_date = "2024-09-23"
+
+[vars]
+# 開発環境で使用する変数（本番環境ではsecretsを使用）
+NODE_ENV = "production"
+
+# 本番環境のsecretsは以下のコマンドで設定してください：
+# npx wrangler secret put GITHUB_APP_ID
+# npx wrangler secret put GITHUB_APP_PRIVATE_KEY_BASE64  
+# npx wrangler secret put GITHUB_WEBHOOK_SECRET
+
+[[kv_namespaces]]
+binding = "KV"
+id = "your-kv-namespace-id"
+preview_id = "your-preview-kv-namespace-id"
