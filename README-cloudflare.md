@@ -1,69 +1,69 @@
-# Hello World Check Run App - Cloudflare Workers版
+# Hello World Check Run App - Cloudflare Workers Edition
 
-このGitHub AppはCloudflare Workersでデプロイされ、プルリクエストが作成または更新された際に「Hello World」チェックランを作成します。
+This GitHub App is deployed on Cloudflare Workers and creates a "Hello World" check run when pull requests are created or updated.
 
-## 🚀 Cloudflare Workersへのデプロイ
+## 🚀 Deploy to Cloudflare Workers
 
-### 前提条件
+### Prerequisites
 
-1. [Cloudflare](https://cloudflare.com)のアカウント
-2. [Node.js](https://nodejs.org) (18以上)
-3. [pnpm](https://pnpm.io)パッケージマネージャー
+1. [Cloudflare](https://cloudflare.com) account
+2. [Node.js](https://nodejs.org) (18 or higher)
+3. [pnpm](https://pnpm.io) package manager
 
-### セットアップ手順
+### Setup Instructions
 
-1. **依存関係のインストール**
+1. **Install Dependencies**
    ```bash
    pnpm install
    ```
 
-2. **Wranglerの認証**
+2. **Authenticate Wrangler**
    ```bash
    npx wrangler login
    ```
 
-3. **環境変数の設定**
-   GitHub Appの秘密情報をCloudflare Workersのsecretsとして設定：
+3. **Configure Environment Variables**
+   Set GitHub App secrets as Cloudflare Workers secrets:
    ```bash
    npx wrangler secret put GITHUB_APP_ID
    npx wrangler secret put GITHUB_APP_PRIVATE_KEY_BASE64
    npx wrangler secret put GITHUB_WEBHOOK_SECRET
    ```
 
-4. **KVネームスペースの作成（オプション）**
+4. **Create KV Namespace (Optional)**
    ```bash
    npx wrangler kv:namespace create "KV"
    npx wrangler kv:namespace create "KV" --preview
    ```
-   作成されたIDを`wrangler.toml`のKVネームスペース設定に更新してください。
+   Update the generated IDs in the KV namespace configuration in `wrangler.toml`.
 
-5. **ビルドとデプロイ**
+5. **Build and Deploy**
    ```bash
    pnpm run cf:deploy
    ```
 
-### 開発用コマンド
+### Development Commands
 
-- **ローカル開発サーバーの起動**
+- **Start Local Development Server**
   ```bash
   pnpm run cf:dev
   ```
 
-- **ログの確認**
+- **View Logs**
   ```bash
   pnpm run cf:tail
   ```
 
-- **テストの実行**
+- **Run Tests**
   ```bash
   pnpm test
   ```
 
-## 📝 設定
+## 📝 Configuration
 
 ### wrangler.toml
 
-Cloudflare Workersの設定は`wrangler.toml`ファイルで管理されます：
+Cloudflare Workers configuration is managed in the `wrangler.toml` file:
 
 ```toml
 name = "hello-world-check-run-app"
@@ -74,39 +74,39 @@ compatibility_date = "2024-09-23"
 NODE_ENV = "production"
 ```
 
-### 環境変数
+### Environment Variables
 
-以下の環境変数をCloudflare Workersのsecretsとして設定する必要があります：
+The following environment variables must be set as Cloudflare Workers secrets:
 
-- `GITHUB_APP_ID`: GitHub AppのID
-- `GITHUB_APP_PRIVATE_KEY_BASE64`: GitHub Appの秘密鍵（Base64エンコード済み）
-- `GITHUB_WEBHOOK_SECRET`: WebhookのSecret
+- `GITHUB_APP_ID`: GitHub App ID
+- `GITHUB_APP_PRIVATE_KEY_BASE64`: GitHub App private key (Base64 encoded)
+- `GITHUB_WEBHOOK_SECRET`: Webhook secret
 
-## 🔗 エンドポイント
+## 🔗 Endpoints
 
-デプロイ後、以下のエンドポイントが利用可能になります：
+After deployment, the following endpoints will be available:
 
-- `GET /`: アプリケーションの状態確認
-- `POST /webhooks`: GitHub Webhookの受信エンドポイント
-- `GET /health`: ヘルスチェック
+- `GET /`: Application status check
+- `POST /webhooks`: GitHub Webhook receiver endpoint
+- `GET /health`: Health check
 
-## 🛠️ トラブルシューティング
+## 🛠️ Troubleshooting
 
-### よくある問題
+### Common Issues
 
-1. **デプロイエラー**: `wrangler.toml`の設定を確認
-2. **Webhook認証エラー**: secretsが正しく設定されているか確認
-3. **環境変数エラー**: すべての必要なsecretsが設定されているか確認
+1. **Deployment Error**: Check `wrangler.toml` configuration
+2. **Webhook Authentication Error**: Verify secrets are configured correctly
+3. **Environment Variable Error**: Ensure all required secrets are set
 
-### ログの確認
+### View Logs
 
 ```bash
 pnpm run cf:tail
 ```
 
-でリアルタイムログを確認できます。
+to view real-time logs.
 
-## 📚 参考資料
+## 📚 References
 
 - [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers/)
 - [Hono Framework](https://hono.dev/)
