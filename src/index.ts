@@ -3,7 +3,7 @@ import { Octokit } from "@octokit/rest";
 import { Webhooks } from "@octokit/webhooks";
 import { Hono } from "hono";
 
-// Cloudflare Workers環境用の型定義
+// Cloudflare Workers env vars types
 interface Env {
 	GITHUB_APP_ID: string;
 	GITHUB_APP_PRIVATE_KEY_BASE64: string;
@@ -44,7 +44,7 @@ async function handlePullRequest(payload: PullRequestPayload, env: Env) {
 	try {
 		console.log(`Processing PR #${pullNumber} in ${owner}/${repo}`);
 
-		// Cloudflare Workers環境でBase64デコード
+		// Base64 decode for Cloudflare Workers
 		const privateKeyPem = atob(env.GITHUB_APP_PRIVATE_KEY_BASE64);
 
 		const auth = createAppAuth({
