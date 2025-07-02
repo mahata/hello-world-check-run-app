@@ -1,4 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import app from "./index.js";
+import { createAppAuth } from "@octokit/auth-app";
+import { Octokit } from "@octokit/rest";
+import crypto from "node:crypto";
 
 describe("Environment Variables Validation", () => {
 	beforeEach(() => {
@@ -128,5 +132,169 @@ describe("GitHub API Integration", () => {
 		expect(checkRunPayload.conclusion).toBe("success");
 		expect(checkRunPayload.output.title).toBe("Hello World Message");
 		expect(checkRunPayload.output.summary).toContain("Hello, world!");
+	});
+});
+
+describe("Webhook Integration Tests", () => {
+	let realPayload: any;
+	let mockEnv: any;
+	let mockOctokitCreate: any;
+	let mockCreateAppAuth: any;
+
+	beforeEach(async () => {
+		const fs = await import("node:fs");
+		const path = await import("node:path");
+		const payloadPath = path.join(__dirname, "fixtures", "payload.json");
+		const payloadContent = fs.readFileSync(payloadPath, "utf-8");
+		realPayload = JSON.parse(payloadContent);
+
+		mockEnv = {
+			GITHUB_APP_ID: "12345",
+			GITHUB_APP_PRIVATE_KEY_BASE64: Buffer.from("test-private-key").toString("base64"),
+			GITHUB_WEBHOOK_SECRET: "test-webhook-secret",
+		};
+
+		mockOctokitCreate = vi.fn().mockResolvedValue({
+			data: {
+				id: 123456789,
+				html_url: "https://github.com/mahata/github-actions-sample/runs/123456789"
+			}
+		});
+
+		mockCreateAppAuth = vi.fn().mockReturnValue(
+			vi.fn().mockResolvedValue({
+				token: "mock-installation-token"
+			})
+		);
+
+		vi.spyOn(console, "log").mockImplementation(() => {});
+		vi.spyOn(console, "error").mockImplementation(() => {});
+	});
+
+	afterEach(() => {
+		vi.clearAllMocks();
+		vi.restoreAllMocks();
+	});
+
+	function createWebhookSignature(payload: string, secret: string): string {
+		const hmac = crypto.createHmac("sha256", secret);
+		hmac.update(payload, "utf8");
+		return `sha256=${hmac.digest("hex")}`;
+	}
+
+	it("should handle webhook POST request with real payload", async () => {
+		const payloadString = JSON.stringify(realPayload);
+		const signature = createWebhookSignature(payloadString, mockEnv.GITHUB_WEBHOOK_SECRET);
+
+		const request = new Request("http://localhost:3000/webhooks", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				"X-GitHub-Event": "pull_request",
+				"X-GitHub-Delivery": "12345678-1234-1234-1234-123456789012",
+				"X-Hub-Signature-256": signature,
+			},
+			body: payloadString,
+		});
+
+		const response = await app.fetch(request, mockEnv);
+
+		expect(response.status).toBe(200);
+		expect(await response.text()).toBe("OK");
+	});
+
+	it("should return 500 when required environment variables are missing", async () => {
+		const payloadString = JSON.stringify(realPayload);
+		const signature = createWebhookSignature(payloadString, "test-secret");
+
+		const request = new Request("http://localhost:3000/webhooks", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				"X-GitHub-Event": "pull_request",
+				"X-GitHub-Delivery": "12345678-1234-1234-1234-123456789012",
+				"X-Hub-Signature-256": signature,
+			},
+			body: payloadString,
+		});
+
+		const emptyEnv = {};
+		const response = await app.fetch(request, emptyEnv);
+
+		expect(response.status).toBe(500);
+		expect(await response.text()).toBe("Internal Server Error");
+	});
+
+	it("should return 400 when webhook signature is invalid", async () => {
+		const payloadString = JSON.stringify(realPayload);
+		const invalidSignature = "sha256=invalid-signature";
+
+		const request = new Request("http://localhost:3000/webhooks", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				"X-GitHub-Event": "pull_request",
+				"X-GitHub-Delivery": "12345678-1234-1234-1234-123456789012",
+				"X-Hub-Signature-256": invalidSignature,
+			},
+			body: payloadString,
+		});
+
+		const response = await app.fetch(request, mockEnv);
+
+		expect(response.status).toBe(400);
+		expect(await response.text()).toBe("Bad Request");
+	});
+
+	it("should process webhook payload correctly", async () => {
+		const payloadString = JSON.stringify(realPayload);
+		const signature = createWebhookSignature(payloadString, mockEnv.GITHUB_WEBHOOK_SECRET);
+
+		const request = new Request("http://localhost:3000/webhooks", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				"X-GitHub-Event": "pull_request",
+				"X-GitHub-Delivery": "12345678-1234-1234-1234-123456789012",
+				"X-Hub-Signature-256": signature,
+			},
+			body: payloadString,
+		});
+
+		const response = await app.fetch(request, mockEnv);
+
+		expect(response.status).toBe(200);
+		
+		expect(console.log).toHaveBeenCalledWith(
+			"Processing PR #16 in mahata/github-actions-sample"
+		);
+	});
+
+	it("should handle pull_request.synchronize event", async () => {
+		const synchronizePayload = {
+			...realPayload,
+			action: "synchronize"
+		};
+
+		const payloadString = JSON.stringify(synchronizePayload);
+		const signature = createWebhookSignature(payloadString, mockEnv.GITHUB_WEBHOOK_SECRET);
+
+		const request = new Request("http://localhost:3000/webhooks", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				"X-GitHub-Event": "pull_request",
+				"X-GitHub-Delivery": "12345678-1234-1234-1234-123456789012",
+				"X-Hub-Signature-256": signature,
+			},
+			body: payloadString,
+		});
+
+		const response = await app.fetch(request, mockEnv);
+
+		expect(response.status).toBe(200);
+		expect(console.log).toHaveBeenCalledWith(
+			"Processing PR #16 in mahata/github-actions-sample"
+		);
 	});
 });
