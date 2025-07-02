@@ -1,8 +1,12 @@
 .env
 my-hello-world-cli-app.2025-06-24.private-key.pem
+my-hello-world-cli-app-pkcs8.pem
 node_modules/
 
 dist/*
 
 # Test coverage reports
 coverage/
+
+.dev.vars
+.wrangler

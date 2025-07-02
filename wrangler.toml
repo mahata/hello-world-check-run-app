@@ -1,0 +1,16 @@
+name = "hello-world-check-run-app"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+
+[vars]
+NODE_ENV = "production"
+
+## Run the following commands for the procduction environment:
+# npx wrangler secret put GITHUB_APP_ID
+# npx wrangler secret put GITHUB_APP_PRIVATE_KEY_BASE64  
+# npx wrangler secret put GITHUB_WEBHOOK_SECRET
+
+[[kv_namespaces]]
+binding = "KV"
+id = "your-kv-namespace-id"
+preview_id = "your-preview-kv-namespace-id"

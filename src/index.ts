@@ -1,8 +1,15 @@
-import { serve } from "@hono/node-server";
 import { createAppAuth } from "@octokit/auth-app";
 import { Octokit } from "@octokit/rest";
 import { Webhooks } from "@octokit/webhooks";
-import dotenv from "dotenv";
+import { Hono } from "hono";
+
+// Cloudflare Workers env vars types
+interface Env {
+	GITHUB_APP_ID: string;
+	GITHUB_APP_PRIVATE_KEY_BASE64: string;
+	GITHUB_WEBHOOK_SECRET: string;
+	KV?: KVNamespace;
+}
 
 // GitHub Webhook payload types
 interface PullRequestPayload {
@@ -19,52 +26,9 @@ interface PullRequestPayload {
 	};
 }
 
-import { Hono } from "hono";
+const app = new Hono<{ Bindings: Env }>();
 
-dotenv.config();
-
-const app = new Hono();
-const PORT = Number(process.env.PORT) || 3000;
-
-const appId = process.env.GITHUB_APP_ID;
-const privateKey = process.env.GITHUB_APP_PRIVATE_KEY_BASE64;
-const webhookSecret = process.env.GITHUB_WEBHOOK_SECRET;
-
-if (!appId || !privateKey || !webhookSecret) {
-	console.error(
-		"Error: GITHUB_APP_ID, GITHUB_APP_PRIVATE_KEY_BASE64, and GITHUB_WEBHOOK_SECRET environment variables must be set.",
-	);
-	process.exit(1);
-}
-
-let privateKeyPem: string;
-try {
-	privateKeyPem = Buffer.from(privateKey, "base64").toString("utf8");
-} catch (_e) {
-	console.error(
-		"Error: Could not decode GITHUB_APP_PRIVATE_KEY_BASE64. Ensure it's a valid Base64 string.",
-	);
-	process.exit(1);
-}
-
-const webhooks = new Webhooks({
-	secret: webhookSecret,
-});
-
-const auth = createAppAuth({
-	appId: parseInt(appId, 10),
-	privateKey: privateKeyPem,
-});
-
-webhooks.on("pull_request.opened", async ({ payload }) => {
-	await handlePullRequest(payload);
-});
-
-webhooks.on("pull_request.synchronize", async ({ payload }) => {
-	await handlePullRequest(payload);
-});
-
-async function handlePullRequest(payload: PullRequestPayload) {
+async function handlePullRequest(payload: PullRequestPayload, env: Env) {
 	const { repository, pull_request } = payload;
 	const owner = repository.owner.login;
 	const repo = repository.name;
@@ -79,6 +43,14 @@ async function handlePullRequest(payload: PullRequestPayload) {
 
 	try {
 		console.log(`Processing PR #${pullNumber} in ${owner}/${repo}`);
+
+		// Base64 decode for Cloudflare Workers
+		const privateKeyPem = atob(env.GITHUB_APP_PRIVATE_KEY_BASE64);
+
+		const auth = createAppAuth({
+			appId: parseInt(env.GITHUB_APP_ID, 10),
+			privateKey: privateKeyPem,
+		});
 
 		const { token } = await auth({
 			type: "installation",
@@ -116,14 +88,39 @@ async function handlePullRequest(payload: PullRequestPayload) {
 
 app.get("/", (c) => {
 	return c.json({
-		message: "Hello World GitHub App is running with Hono!",
+		message:
+			"Hello World GitHub App is running on Cloudflare Workers with Hono!",
 		timestamp: new Date().toISOString(),
 		framework: "Hono",
+		runtime: "Cloudflare Workers",
 	});
 });
 
 app.post("/webhooks", async (c) => {
 	try {
+		const env = c.env;
+
+		if (
+			!env.GITHUB_APP_ID ||
+			!env.GITHUB_APP_PRIVATE_KEY_BASE64 ||
+			!env.GITHUB_WEBHOOK_SECRET
+		) {
+			console.error("Required environment variables are not set");
+			return c.text("Internal Server Error", 500);
+		}
+
+		const webhooks = new Webhooks({
+			secret: env.GITHUB_WEBHOOK_SECRET,
+		});
+
+		webhooks.on("pull_request.opened", async ({ payload }) => {
+			await handlePullRequest(payload, env);
+		});
+
+		webhooks.on("pull_request.synchronize", async ({ payload }) => {
+			await handlePullRequest(payload, env);
+		});
+
 		const body = await c.req.text();
 		const headers = c.req.header();
 
@@ -144,21 +141,9 @@ app.post("/webhooks", async (c) => {
 app.get("/health", (c) => {
 	return c.json({
 		status: "healthy",
-		uptime: process.uptime(),
-		memory: process.memoryUsage(),
 		timestamp: new Date().toISOString(),
+		runtime: "Cloudflare Workers",
 	});
 });
 
-console.log(`Starting GitHub App server on port ${PORT}...`);
-serve(
-	{
-		fetch: app.fetch,
-		port: PORT,
-	},
-	(info) => {
-		console.log(`GitHub App server is running on port ${info.port}`);
-		console.log(`Webhook endpoint: http://localhost:${info.port}/webhooks`);
-		console.log(`Health check: http://localhost:${info.port}/health`);
-	},
-);
+export default app;
