@@ -36,6 +36,46 @@ Start the development server with hot reload:
 pnpm run cf:dev
 ```
 
+## Deployment
+
+Deploy the application to Cloudflare Workers:
+
+```bash
+pnpm run cf:deploy
+```
+
+Monitor logs from the deployed application:
+
+```bash
+pnpm run cf:tail
+```
+
+## Code Quality
+
+### Linting
+
+Check code style and formatting:
+
+```bash
+pnpm run lint
+```
+
+Automatically fix code style issues:
+
+```bash
+pnpm run lint:fix
+```
+
+### Pre-commit Checks
+
+Run comprehensive checks before committing (linting, tests, and build):
+
+```bash
+make pre-commit
+```
+
+This command runs linting, tests, and build to ensure code quality before committing changes.
+
 ## Testing
 
 This project uses Vitest for testing.
