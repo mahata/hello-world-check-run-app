@@ -1,7 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import app from "./index.js";
-import { createAppAuth } from "@octokit/auth-app";
-import { Octokit } from "@octokit/rest";
 import crypto from "node:crypto";
 
 describe("Environment Variables Validation", () => {
