@@ -8,7 +8,6 @@ interface Env {
 	GITHUB_APP_ID: string;
 	GITHUB_APP_PRIVATE_KEY_BASE64: string;
 	GITHUB_WEBHOOK_SECRET: string;
-	KV?: KVNamespace;
 }
 
 // GitHub Webhook payload types
