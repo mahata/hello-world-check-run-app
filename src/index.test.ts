@@ -1,6 +1,8 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: Payload Type doesn't matter in this test file */
+
+import crypto from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import app from "./index.js";
-import crypto from "node:crypto";
 
 describe("Environment Variables Validation", () => {
 	beforeEach(() => {
@@ -136,8 +138,8 @@ describe("GitHub API Integration", () => {
 describe("Webhook Integration Tests", () => {
 	let realPayload: any;
 	let mockEnv: any;
-	let mockOctokitCreate: any;
-	let mockCreateAppAuth: any;
+	let _mockOctokitCreate: any;
+	let _mockCreateAppAuth: any;
 
 	beforeEach(async () => {
 		const fs = await import("node:fs");
@@ -148,21 +150,23 @@ describe("Webhook Integration Tests", () => {
 
 		mockEnv = {
 			GITHUB_APP_ID: "12345",
-			GITHUB_APP_PRIVATE_KEY_BASE64: Buffer.from("test-private-key").toString("base64"),
+			GITHUB_APP_PRIVATE_KEY_BASE64:
+				Buffer.from("test-private-key").toString("base64"),
 			GITHUB_WEBHOOK_SECRET: "test-webhook-secret",
 		};
 
-		mockOctokitCreate = vi.fn().mockResolvedValue({
+		_mockOctokitCreate = vi.fn().mockResolvedValue({
 			data: {
 				id: 123456789,
-				html_url: "https://github.com/mahata/github-actions-sample/runs/123456789"
-			}
+				html_url:
+					"https://github.com/mahata/github-actions-sample/runs/123456789",
+			},
 		});
 
-		mockCreateAppAuth = vi.fn().mockReturnValue(
+		_mockCreateAppAuth = vi.fn().mockReturnValue(
 			vi.fn().mockResolvedValue({
-				token: "mock-installation-token"
-			})
+				token: "mock-installation-token",
+			}),
 		);
 
 		vi.spyOn(console, "log").mockImplementation(() => {});
@@ -182,7 +186,10 @@ describe("Webhook Integration Tests", () => {
 
 	it("should handle webhook POST request with real payload", async () => {
 		const payloadString = JSON.stringify(realPayload);
-		const signature = createWebhookSignature(payloadString, mockEnv.GITHUB_WEBHOOK_SECRET);
+		const signature = createWebhookSignature(
+			payloadString,
+			mockEnv.GITHUB_WEBHOOK_SECRET,
+		);
 
 		const request = new Request("http://localhost:3000/webhooks", {
 			method: "POST",
@@ -246,7 +253,10 @@ describe("Webhook Integration Tests", () => {
 
 	it("should process webhook payload correctly", async () => {
 		const payloadString = JSON.stringify(realPayload);
-		const signature = createWebhookSignature(payloadString, mockEnv.GITHUB_WEBHOOK_SECRET);
+		const signature = createWebhookSignature(
+			payloadString,
+			mockEnv.GITHUB_WEBHOOK_SECRET,
+		);
 
 		const request = new Request("http://localhost:3000/webhooks", {
 			method: "POST",
@@ -262,20 +272,23 @@ describe("Webhook Integration Tests", () => {
 		const response = await app.fetch(request, mockEnv);
 
 		expect(response.status).toBe(200);
-		
+
 		expect(console.log).toHaveBeenCalledWith(
-			"Processing PR #16 in mahata/github-actions-sample"
+			"Processing PR #16 in mahata/github-actions-sample",
 		);
 	});
 
 	it("should handle pull_request.synchronize event", async () => {
 		const synchronizePayload = {
 			...realPayload,
-			action: "synchronize"
+			action: "synchronize",
 		};
 
 		const payloadString = JSON.stringify(synchronizePayload);
-		const signature = createWebhookSignature(payloadString, mockEnv.GITHUB_WEBHOOK_SECRET);
+		const signature = createWebhookSignature(
+			payloadString,
+			mockEnv.GITHUB_WEBHOOK_SECRET,
+		);
 
 		const request = new Request("http://localhost:3000/webhooks", {
 			method: "POST",
@@ -292,7 +305,7 @@ describe("Webhook Integration Tests", () => {
 
 		expect(response.status).toBe(200);
 		expect(console.log).toHaveBeenCalledWith(
-			"Processing PR #16 in mahata/github-actions-sample"
+			"Processing PR #16 in mahata/github-actions-sample",
 		);
 	});
 });
