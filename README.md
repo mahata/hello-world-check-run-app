@@ -12,32 +12,28 @@ A GitHub App built with Hono that creates hello world check runs on pull request
 ## Setup
 
 1. Install dependencies:
+
    ```bash
    pnpm install
    ```
 
 2. Set up environment variables:
+
    ```bash
-   cp .env.example .env
+   cp .dev.vars.sample .dev.vars
    ```
-   
+
    Configure the following variables:
    - `GITHUB_APP_ID`: Your GitHub App ID
    - `GITHUB_APP_PRIVATE_KEY_BASE64`: Base64 encoded private key
    - `GITHUB_WEBHOOK_SECRET`: Webhook secret for verification
-   - `PORT`: Server port (default: 3000)
-
-3. Build and start the application:
-   ```bash
-   pnpm run build
-   pnpm start
-   ```
 
 ## Development
 
 Start the development server with hot reload:
+
 ```bash
-pnpm run dev
+pnpm run cf:dev
 ```
 
 ## Testing
