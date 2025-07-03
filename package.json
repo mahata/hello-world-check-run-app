@@ -35,7 +35,7 @@
 		"@vitest/ui": "^3.2.4",
 		"typescript": "^5.8.3",
 		"vitest": "^3.2.4",
-		"wrangler": "^4.21.2"
+		"wrangler": "^4.22.0"
 	},
 	"dependencies": {
 		"@octokit/app": "^16.0.1",
